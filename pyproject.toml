@@ -25,19 +25,11 @@ classifiers = [
 keywords = ["speech", "alignment", "asr", "qwen", "audio", "forced-alignment"]
 dependencies = [
     "torch>=2.0.0",
-    "transformers>=4.40.0",
-    "numpy>=1.20.0",
-    "librosa>=0.10.0",
-    "soundfile>=0.12.0",
+    "qwen-asr>=0.0.6",
     "fastapi>=0.100.0",
     "uvicorn>=0.23.0",
     "pydantic>=2.0.0",
-    "requests>=2.28.0",
-    "nagisa>=0.2.11",
-    "soynlp>=0.0.493",
-    "qwen-omni-utils",
     "huggingface_hub>=0.20.0",
-    "six",
 ]
 
 [project.optional-dependencies]
@@ -55,7 +47,7 @@ Homepage = "https://github.com/QwenLM/Qwen3-ASR"
 Repository = "https://github.com/WEIFENG2333/qwen3-forced-aligner"
 
 [tool.setuptools.packages.find]
-include = ["qwen3_aligner*", "qwen_asr*"]
+include = ["qwen3_aligner*"]
 
 [tool.ruff]
 line-length = 120

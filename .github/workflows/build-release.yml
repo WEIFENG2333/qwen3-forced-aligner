@@ -58,7 +58,7 @@ jobs:
           pip install torch --index-url https://download.pytorch.org/whl/cpu
           pip install -e ".[dev]"
 
-      - name: Download model for testing
+      - name: Download model
         run: |
           python -c "
           from huggingface_hub import snapshot_download
@@ -73,17 +73,55 @@ jobs:
         run: |
           python build.py --archive
 
-      - name: Test executable (Unix)
+      - name: Copy model to dist
+        shell: bash
+        run: |
+          mkdir -p dist/qwen3-aligner/models
+          cp -r qwen3_aligner/models/* dist/qwen3-aligner/models/
+
+      - name: Test executable - help (Unix)
         if: matrix.platform != 'windows'
         run: |
           ./dist/qwen3-aligner/qwen3-aligner --help
           ./dist/qwen3-aligner/qwen3-aligner model-info
 
-      - name: Test executable (Windows)
+      - name: Test executable - help (Windows)
         if: matrix.platform == 'windows'
         run: |
           .\dist\qwen3-aligner\qwen3-aligner.exe --help
           .\dist\qwen3-aligner\qwen3-aligner.exe model-info
+
+      - name: Integration test - alignment (Unix)
+        if: matrix.platform != 'windows'
+        run: |
+          echo "Running integration test with actual model..."
+          ./dist/qwen3-aligner/qwen3-aligner align \
+            -a test_audio/test_zh.wav \
+            -t "欢迎使用语音对齐" \
+            -l Chinese \
+            -f json
+          echo ""
+          echo "Testing English audio..."
+          ./dist/qwen3-aligner/qwen3-aligner align \
+            -a test_audio/test_en.wav \
+            -t "Today is a wonderful day" \
+            -l English
+
+      - name: Integration test - alignment (Windows)
+        if: matrix.platform == 'windows'
+        run: |
+          echo "Running integration test with actual model..."
+          .\dist\qwen3-aligner\qwen3-aligner.exe align `
+            -a test_audio/test_zh.wav `
+            -t "欢迎使用语音对齐" `
+            -l Chinese `
+            -f json
+          echo ""
+          echo "Testing English audio..."
+          .\dist\qwen3-aligner\qwen3-aligner.exe align `
+            -a test_audio/test_en.wav `
+            -t "Today is a wonderful day" `
+            -l English
 
       - name: Get version
         id: version
@@ -102,14 +140,7 @@ jobs:
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           ARCHIVE_NAME="qwen3-aligner-${VERSION}-${{ matrix.platform }}-${{ matrix.arch }}"
-
-          # Find the zip file
-          if [ "${{ matrix.platform }}" == "windows" ]; then
-            mv dist/qwen3-aligner-*.zip "dist/${ARCHIVE_NAME}.zip"
-          else
-            mv dist/qwen3-aligner-*.zip "dist/${ARCHIVE_NAME}.zip"
-          fi
-
+          mv dist/qwen3-aligner-*.zip "dist/${ARCHIVE_NAME}.zip"
           echo "ARCHIVE_NAME=${ARCHIVE_NAME}" >> $GITHUB_ENV
 
       - name: Upload artifact

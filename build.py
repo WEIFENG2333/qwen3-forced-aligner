@@ -87,10 +87,11 @@ except:
 # Collect data files
 datas = []
 
-# Add qwen_asr assets (using relative path)
-assets_path = os.path.join(SPEC_DIR, 'qwen_asr', 'inference', 'assets')
-if os.path.exists(assets_path):
-    datas.append((assets_path, os.path.join('qwen_asr', 'inference', 'assets')))
+# Collect qwen_asr data (from installed package)
+try:
+    datas.extend(collect_data_files('qwen_asr'))
+except:
+    pass
 
 # Collect transformers data
 try:
