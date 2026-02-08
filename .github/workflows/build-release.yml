@@ -63,6 +63,11 @@ jobs:
         run: |
           uv sync --extra dev
 
+      - name: Install CPU-only PyTorch (reduce package size)
+        if: matrix.platform == 'linux' || matrix.platform == 'windows'
+        run: |
+          uv pip install torch --index-url https://download.pytorch.org/whl/cpu --reinstall
+
       - name: Download model
         run: |
           uv run python -c "
