@@ -67,11 +67,15 @@ jobs:
             echo "Replacing PyTorch with CPU-only version..."
             uv pip install torch --index-url https://download.pytorch.org/whl/cpu --reinstall
             uv pip uninstall nvidia-cublas-cu12 nvidia-cuda-cupti-cu12 nvidia-cuda-nvrtc-cu12 nvidia-cuda-runtime-cu12 nvidia-cudnn-cu12 nvidia-cufft-cu12 nvidia-curand-cu12 nvidia-cusolver-cu12 nvidia-cusparse-cu12 nvidia-cusparselt-cu12 nvidia-nccl-cu12 nvidia-nvjitlink-cu12 nvidia-nvtx-cu12 nvidia-cufile-cu12 nvidia-nvshmem-cu12 triton 2>/dev/null || true
+            echo "Verifying torch version:"
+            uv pip show torch | grep -E "^(Name|Version)"
+            echo "Checking for remaining nvidia packages:"
+            uv pip list | grep -i nvidia || echo "No nvidia packages found"
           fi
 
       - name: Download model
         run: |
-          uv run python -c "
+          uv run --no-sync python -c "
           from huggingface_hub import snapshot_download
           snapshot_download(
               repo_id='Qwen/Qwen3-ForcedAligner-0.6B',
@@ -82,7 +86,7 @@ jobs:
 
       - name: Build with PyInstaller
         run: |
-          uv run python build.py
+          uv run --no-sync python build.py
 
       - name: Copy model to dist
         shell: bash
