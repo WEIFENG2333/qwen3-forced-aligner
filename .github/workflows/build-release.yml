@@ -70,7 +70,7 @@ jobs:
 
       - name: Build with PyInstaller
         run: |
-          uv run python build.py --archive
+          uv run python build.py
 
       - name: Copy model to dist
         shell: bash
@@ -134,12 +134,12 @@ jobs:
             echo "version=dev-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
           fi
 
-      - name: Rename archive
+      - name: Create archive (with model)
         shell: bash
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           ARCHIVE_NAME="qwen3-aligner-${VERSION}-${{ matrix.platform }}-${{ matrix.arch }}"
-          mv dist/qwen3-aligner-*.zip "dist/${ARCHIVE_NAME}.zip"
+          cd dist && zip -r "${ARCHIVE_NAME}.zip" qwen3-aligner/
           echo "ARCHIVE_NAME=${ARCHIVE_NAME}" >> $GITHUB_ENV
 
       - name: Upload artifact
@@ -202,20 +202,9 @@ jobs:
             ### Quick Start
 
             1. Download and extract the archive for your platform
-            2. Download the model:
+            2. Run alignment:
                ```bash
-               ./qwen3-aligner download-model
-               ```
-            3. Run alignment:
-               ```bash
-               ./qwen3-aligner align -a audio.wav -t "your text" -l Chinese
+               ./qwen3-aligner align -a audio.wav -t "your text" -l zh
                ```
 
-            ### Model
-
-            The model (~1.8GB) is not included in the binary. Download it using:
-            ```bash
-            qwen3-aligner download-model
-            ```
-
-            Or manually from: https://huggingface.co/Qwen/Qwen3-ForcedAligner-0.6B
+            The model is included in the package, no additional download needed.
