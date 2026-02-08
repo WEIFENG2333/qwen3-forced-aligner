@@ -122,13 +122,11 @@ a = Analysis(
         'notebook',
         'pytest',
         'sphinx',
-        'scipy',
         'sklearn',
         'numba',
         'PIL',
         'cv2',
         'pandas',
-        'sympy',
         'jedi',
         'parso',
     ],
@@ -158,12 +156,15 @@ exe = EXE(
     entitlements_file=None,
 )
 
+import platform as _platform
+_is_windows = _platform.system() == 'Windows'
+
 coll = COLLECT(
     exe,
     a.binaries,
     a.zipfiles,
     a.datas,
-    strip=True,
+    strip=not _is_windows,
     upx=True,
     upx_exclude=[],
     name='qwen3-aligner',
