@@ -140,13 +140,23 @@ jobs:
             echo "version=dev-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
           fi
 
-      - name: Create archive (with model)
+      - name: Create archive (Unix)
+        if: matrix.platform != 'windows'
         shell: bash
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           ARCHIVE_NAME="qwen3-aligner-${VERSION}-${{ matrix.platform }}-${{ matrix.arch }}"
           cd dist && zip -r "${ARCHIVE_NAME}.zip" qwen3-aligner/
           echo "ARCHIVE_NAME=${ARCHIVE_NAME}" >> $GITHUB_ENV
+
+      - name: Create archive (Windows)
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          $VERSION = "${{ steps.version.outputs.version }}"
+          $ARCHIVE_NAME = "qwen3-aligner-${VERSION}-${{ matrix.platform }}-${{ matrix.arch }}"
+          Compress-Archive -Path dist/qwen3-aligner -DestinationPath "dist/${ARCHIVE_NAME}.zip"
+          echo "ARCHIVE_NAME=${ARCHIVE_NAME}" >> $env:GITHUB_ENV
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
