@@ -28,20 +28,18 @@ Audio-text forced alignment service based on [Qwen3-ForcedAligner-0.6B](https://
    ./qwen3-aligner align -a audio.wav -t "Hello world" -l English
    ```
 
-### Option 2: Install from Source
+### Option 2: Install from Source (with uv - recommended)
 
 ```bash
-# Clone the repository
+# Install uv if not already installed
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Clone and install
 git clone https://github.com/WEIFENG2333/qwen3-forced-aligner.git
 cd qwen3-forced-aligner
 
-# Create virtual environment
-python -m venv .venv
-source .venv/bin/activate  # Linux/macOS
-# or: .venv\Scripts\activate  # Windows
-
-# Install dependencies
-pip install -e .
+# Install with uv (fast!)
+uv sync
 
 # Download model
 qwen3-aligner download-model
@@ -156,13 +154,15 @@ qwen3-aligner model-info
 ### Prerequisites
 
 - Python 3.9+
-- PyInstaller
-- PyTorch
+- uv (recommended) or pip
 
 ### Build
 
 ```bash
-# Install build dependencies
+# Install with uv (recommended)
+uv sync --extra dev
+
+# Or with pip
 pip install -e ".[dev]"
 
 # Build (without model)
@@ -193,7 +193,6 @@ qwen3-forced-aligner/
 │   ├── model_manager.py # Model management (singleton, auto-unload)
 │   ├── config.py        # Configuration
 │   └── schemas.py       # Pydantic models
-├── qwen_asr/            # Core ASR/alignment library
 ├── build.py             # PyInstaller build script
 ├── pyproject.toml       # Project configuration
 └── README.md
