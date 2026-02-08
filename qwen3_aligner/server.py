@@ -14,11 +14,11 @@ import time
 from contextlib import asynccontextmanager
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from .config import Config, get_config, set_config
-from .model_manager import get_model_manager, ModelManager
+from .config import Config, get_config, normalize_language, set_config
+from .model_manager import get_model_manager
 from .schemas import (
     AlignRequest,
     AlignResponse,
@@ -171,10 +171,15 @@ def register_routes(app: FastAPI) -> None:
         start_time = time.time()
 
         try:
+            language = normalize_language(request.language)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+
+        try:
             alignments = await manager.align(
                 audio=request.audio,
                 text=request.text,
-                language=request.language,
+                language=language,
             )
 
             processing_time = time.time() - start_time

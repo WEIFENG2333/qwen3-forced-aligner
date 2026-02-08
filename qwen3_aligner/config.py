@@ -8,6 +8,46 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
+# Supported languages and their aliases
+SUPPORTED_LANGUAGES = [
+    "Chinese", "Cantonese", "English", "German", "Spanish",
+    "French", "Italian", "Portuguese", "Russian", "Korean", "Japanese",
+]
+
+LANGUAGE_ALIASES = {
+    "zh": "Chinese",
+    "yue": "Cantonese",
+    "en": "English",
+    "de": "German",
+    "es": "Spanish",
+    "fr": "French",
+    "it": "Italian",
+    "pt": "Portuguese",
+    "ru": "Russian",
+    "ko": "Korean",
+    "ja": "Japanese",
+}
+
+
+def normalize_language(language: str) -> str:
+    """Normalize language input to the canonical name.
+
+    Accepts full names (case-insensitive) or short codes like 'zh', 'en'.
+    """
+    lang = language.strip()
+    # Check aliases first
+    if lang.lower() in LANGUAGE_ALIASES:
+        return LANGUAGE_ALIASES[lang.lower()]
+    # Title-case normalization (same as qwen_asr)
+    normalized = lang[:1].upper() + lang[1:].lower()
+    if normalized in SUPPORTED_LANGUAGES:
+        return normalized
+    raise ValueError(
+        f"Unsupported language: '{language}'. "
+        f"Supported: {', '.join(SUPPORTED_LANGUAGES)}. "
+        f"Aliases: {', '.join(LANGUAGE_ALIASES.keys())}"
+    )
+
 
 def get_app_dir() -> Path:
     """

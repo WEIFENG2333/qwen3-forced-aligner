@@ -5,12 +5,12 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "qwen3-forced-aligner"
 version = "0.1.0"
-description = "Qwen3 Forced Aligner - Audio-Text Alignment Service"
+description = "Audio-text forced alignment using Qwen3-ForcedAligner-0.6B"
 readme = "README.md"
 license = {text = "Apache-2.0"}
 requires-python = ">=3.10"
 authors = [
-    {name = "Qwen Team"},
+    {name = "liangweifeng", email = "liangweifeng@example.com"},
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -43,11 +43,14 @@ dev = [
 qwen3-aligner = "qwen3_aligner.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/QwenLM/Qwen3-ASR"
 Repository = "https://github.com/WEIFENG2333/qwen3-forced-aligner"
+Issues = "https://github.com/WEIFENG2333/qwen3-forced-aligner/issues"
 
 [tool.setuptools.packages.find]
 include = ["qwen3_aligner*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 120

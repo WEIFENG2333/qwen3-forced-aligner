@@ -13,7 +13,7 @@ import logging
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Optional
 
 import torch
 

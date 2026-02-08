@@ -3,225 +3,157 @@
 [![Build and Release](https://github.com/WEIFENG2333/qwen3-forced-aligner/actions/workflows/build-release.yml/badge.svg)](https://github.com/WEIFENG2333/qwen3-forced-aligner/actions/workflows/build-release.yml)
 [![Test](https://github.com/WEIFENG2333/qwen3-forced-aligner/actions/workflows/test.yml/badge.svg)](https://github.com/WEIFENG2333/qwen3-forced-aligner/actions/workflows/test.yml)
 
-Audio-text forced alignment service based on [Qwen3-ForcedAligner-0.6B](https://huggingface.co/Qwen/Qwen3-ForcedAligner-0.6B) model.
+基于 [Qwen3-ForcedAligner-0.6B](https://huggingface.co/Qwen/Qwen3-ForcedAligner-0.6B) 的音频-文本强制对齐工具。给定一段音频和对应文本，输出每个词/字的时间戳。
 
-## Features
+支持 CLI 命令行和 REST API 两种使用方式，支持 11 种语言。提供 Linux、macOS、Windows 预编译包，开箱即用。
 
-- **CLI Mode**: Command-line audio-text alignment
-- **Server Mode**: REST API service with model caching
-- **Multi-language Support**: Chinese, English, Japanese, Korean, and 7 more languages
-- **Multiple Audio Inputs**: Local files, URLs, Base64
-- **Cross-platform**: Linux, macOS, Windows binaries available
+## 安装
 
-## Quick Start
+### 方式一：下载预编译包
 
-### Option 1: Download Pre-built Binary
-
-1. Download the latest release from [Releases](https://github.com/WEIFENG2333/qwen3-forced-aligner/releases)
-2. Extract the archive
-3. Download the model:
-   ```bash
-   ./qwen3-aligner download-model
-   ```
-4. Run alignment:
-   ```bash
-   ./qwen3-aligner align -a audio.wav -t "Hello world" -l English
-   ```
-
-### Option 2: Install from Source (with uv - recommended)
+从 [Releases](https://github.com/WEIFENG2333/qwen3-forced-aligner/releases) 下载对应平台的压缩包，解压后即可使用。
 
 ```bash
-# Install uv if not already installed
-curl -LsSf https://astral.sh/uv/install.sh | sh
+# 下载模型（约 1.8GB，首次使用前需要下载）
+./qwen3-aligner download-model
 
-# Clone and install
+# 运行对齐
+./qwen3-aligner align -a audio.wav -t "你好世界" -l zh
+```
+
+### 方式二：从源码安装
+
+```bash
 git clone https://github.com/WEIFENG2333/qwen3-forced-aligner.git
 cd qwen3-forced-aligner
 
-# Install with uv (fast!)
+# 推荐使用 uv
 uv sync
-
-# Download model
 qwen3-aligner download-model
-
-# Run alignment
-qwen3-aligner align -a audio.wav -t "Hello world" -l English
+qwen3-aligner align -a audio.wav -t "Hello world" -l en
 ```
 
-## Usage
+## 使用
 
-### CLI Mode
+### 命令行
 
 ```bash
-# Basic usage
-qwen3-aligner align -a audio.wav -t "Text content" -l Chinese
+# 中文对齐
+qwen3-aligner align -a audio.wav -t "欢迎使用语音对齐" -l zh
 
-# Specify output format
-qwen3-aligner align -a audio.wav -t "Hello world" -l English -f json
+# 英文对齐，输出 JSON
+qwen3-aligner align -a audio.wav -t "Hello world" -l en -f json
 
-# Use custom model path
-qwen3-aligner align -a audio.wav -t "Text" -l Chinese -m ./models
+# 日文对齐，结果写入文件
+qwen3-aligner align -a audio.wav -t "こんにちは" -l ja -o result.json -f json
+
+# 指定模型路径
+qwen3-aligner align -a audio.wav -t "text" -l zh -m ./my-models
+
+# CUDA 推理（需要 GPU）
+qwen3-aligner align -a audio.wav -t "text" -l zh --dtype bfloat16
 ```
 
-### Server Mode
+### REST API 服务
 
 ```bash
-# Start server
+# 启动服务
 qwen3-aligner serve -p 8765
 
-# Run in background
-qwen3-aligner serve -p 8765 &
-
-# Set model auto-unload timeout (seconds)
+# 设置模型保活时间（秒），-1 表示永不卸载
 qwen3-aligner serve -p 8765 -k 300
 ```
 
-### REST API
+请求示例：
 
 ```bash
-# Health check
-curl http://localhost:8765/health
-
-# Alignment request
 curl -X POST http://localhost:8765/align \
   -H "Content-Type: application/json" \
-  -d '{
-    "audio": "/path/to/audio.wav",
-    "text": "Text content",
-    "language": "Chinese"
-  }'
-
-# Using Base64 audio
-curl -X POST http://localhost:8765/align \
-  -H "Content-Type: application/json" \
-  -d '{
-    "audio": "data:audio/wav;base64,UklGR...",
-    "text": "Text content",
-    "language": "Chinese"
-  }'
-
-# Model status
-curl http://localhost:8765/model/status
-
-# Manually unload model
-curl -X POST http://localhost:8765/model/unload
+  -d '{"audio": "/path/to/audio.wav", "text": "你好世界", "language": "zh"}'
 ```
 
-### Model Management
-
-```bash
-# Download model
-qwen3-aligner download-model
-
-# Download to custom location
-qwen3-aligner download-model -o ./my-models
-
-# Show model information
-qwen3-aligner model-info
-```
-
-## API Response Format
+返回格式：
 
 ```json
 {
   "success": true,
   "alignments": [
-    {"text": "Hello", "start_time": 0.24, "end_time": 0.64},
-    {"text": "world", "start_time": 0.64, "end_time": 0.96}
+    {"text": "你", "start_time": 0.24, "end_time": 0.44},
+    {"text": "好", "start_time": 0.44, "end_time": 0.64},
+    {"text": "世", "start_time": 0.64, "end_time": 0.80},
+    {"text": "界", "start_time": 0.80, "end_time": 0.96}
   ],
   "processing_time": 0.25
 }
 ```
 
-## Supported Languages
+其他接口：
 
-| Language | Code |
-|----------|------|
-| Chinese | Chinese |
-| Cantonese | Cantonese |
-| English | English |
-| German | German |
-| Spanish | Spanish |
-| French | French |
-| Italian | Italian |
-| Portuguese | Portuguese |
-| Russian | Russian |
-| Korean | Korean |
-| Japanese | Japanese |
+| 接口 | 方法 | 说明 |
+|------|------|------|
+| `/health` | GET | 健康检查 |
+| `/model/status` | GET | 模型状态 |
+| `/model/load` | POST | 预加载模型 |
+| `/model/unload` | POST | 卸载模型释放内存 |
+| `/config` | GET | 查看当前配置 |
 
-## Building from Source
-
-### Prerequisites
-
-- Python 3.9+
-- uv (recommended) or pip
-
-### Build
+### 模型管理
 
 ```bash
-# Install with uv (recommended)
+# 下载模型到默认位置
+qwen3-aligner download-model
+
+# 下载到指定目录
+qwen3-aligner download-model -o ./my-models
+
+# 查看模型信息
+qwen3-aligner model-info
+```
+
+## 支持的语言
+
+| 语言 | 代码 | 语言 | 代码 |
+|------|------|------|------|
+| Chinese 中文 | `zh` | Italian 意大利语 | `it` |
+| Cantonese 粤语 | `yue` | Portuguese 葡萄牙语 | `pt` |
+| English 英语 | `en` | Russian 俄语 | `ru` |
+| German 德语 | `de` | Korean 韩语 | `ko` |
+| Spanish 西班牙语 | `es` | Japanese 日语 | `ja` |
+| French 法语 | `fr` | | |
+
+`-l` 参数支持全称（如 `Chinese`）和缩写（如 `zh`），不区分大小写。
+
+## 环境变量
+
+| 变量 | 说明 | 默认值 |
+|------|------|--------|
+| `ALIGNER_MODEL_PATH` | 模型路径 | 自动检测 |
+| `ALIGNER_DEVICE` | 设备 (cpu/cuda) | cpu |
+| `ALIGNER_DTYPE` | 数据类型 (float32/bfloat16) | float32 |
+| `ALIGNER_HOST` | 服务绑定地址 | 0.0.0.0 |
+| `ALIGNER_PORT` | 服务端口 | 8765 |
+| `ALIGNER_KEEP_ALIVE` | 模型保活时间（秒） | 300 |
+
+## 从源码构建
+
+```bash
+# 安装开发依赖
 uv sync --extra dev
 
-# Or with pip
-pip install -e ".[dev]"
-
-# Build (without model)
+# 构建
 python build.py
 
-# Build with model included
-python build.py --with-model
-
-# Build and create archive
+# 构建并打包为 zip
 python build.py --archive
 ```
 
-### Output
-
-Built files will be in `dist/qwen3-aligner/`:
-- `qwen3-aligner` (or `qwen3-aligner.exe` on Windows)
-- `models/` directory (copy model files here)
-
-## Project Structure
-
-```
-qwen3-forced-aligner/
-├── qwen3_aligner/
-│   ├── __init__.py
-│   ├── __main__.py
-│   ├── cli.py           # CLI entry point
-│   ├── server.py        # FastAPI server
-│   ├── model_manager.py # Model management (singleton, auto-unload)
-│   ├── config.py        # Configuration
-│   └── schemas.py       # Pydantic models
-├── build.py             # PyInstaller build script
-├── pyproject.toml       # Project configuration
-└── README.md
-```
-
-## Performance
-
-| Scenario | Time |
-|----------|------|
-| Model loading (first time) | ~5-7s |
-| Inference (model loaded) | ~0.2-0.5s |
-| Server startup | ~1-2s |
-
-## Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `ALIGNER_MODEL_PATH` | Model path | Auto-detect |
-| `ALIGNER_DEVICE` | Device (cpu/cuda) | cpu |
-| `ALIGNER_DTYPE` | Data type (float32/bfloat16) | float32 |
-| `ALIGNER_HOST` | Server host | 0.0.0.0 |
-| `ALIGNER_PORT` | Server port | 8765 |
-| `ALIGNER_KEEP_ALIVE` | Keep-alive timeout | 300 |
+构建产物在 `dist/qwen3-aligner/` 目录下。
 
 ## License
 
 Apache 2.0
 
-## Acknowledgments
+## 致谢
 
-- [Qwen3-ForcedAligner](https://huggingface.co/Qwen/Qwen3-ForcedAligner-0.6B) by Alibaba Qwen Team
-- [qwen_asr](https://github.com/QwenLM/Qwen3-ASR) - Core ASR library
+- [Qwen3-ForcedAligner](https://huggingface.co/Qwen/Qwen3-ForcedAligner-0.6B) - Alibaba Qwen Team
+- [qwen_asr](https://github.com/QwenLM/Qwen3-ASR) - Qwen3 ASR 核心库

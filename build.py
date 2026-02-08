@@ -106,7 +106,7 @@ except:
     pass
 
 a = Analysis(
-    [os.path.join(SPEC_DIR, 'qwen3_aligner_main.py')],
+    [os.path.join(SPEC_DIR, 'main.py')],
     pathex=[SPEC_DIR],
     binaries=[],
     datas=datas,
@@ -122,6 +122,15 @@ a = Analysis(
         'notebook',
         'pytest',
         'sphinx',
+        'scipy',
+        'sklearn',
+        'numba',
+        'PIL',
+        'cv2',
+        'pandas',
+        'sympy',
+        'jedi',
+        'parso',
     ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
@@ -154,7 +163,7 @@ coll = COLLECT(
     a.binaries,
     a.zipfiles,
     a.datas,
-    strip=False,
+    strip=True,
     upx=True,
     upx_exclude=[],
     name='qwen3-aligner',

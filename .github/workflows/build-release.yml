@@ -93,34 +93,34 @@ jobs:
       - name: Integration test - alignment (Unix)
         if: matrix.platform != 'windows'
         run: |
-          echo "Running integration test with actual model..."
+          echo "Testing Chinese alignment..."
           ./dist/qwen3-aligner/qwen3-aligner align \
             -a test_audio/test_zh.wav \
             -t "欢迎使用语音对齐" \
-            -l Chinese \
+            -l zh \
             -f json
           echo ""
-          echo "Testing English audio..."
+          echo "Testing English alignment..."
           ./dist/qwen3-aligner/qwen3-aligner align \
             -a test_audio/test_en.wav \
             -t "Today is a wonderful day" \
-            -l English
+            -l en
 
       - name: Integration test - alignment (Windows)
         if: matrix.platform == 'windows'
         run: |
-          echo "Running integration test with actual model..."
+          echo "Testing Chinese alignment..."
           .\dist\qwen3-aligner\qwen3-aligner.exe align `
             -a test_audio/test_zh.wav `
             -t "欢迎使用语音对齐" `
-            -l Chinese `
+            -l zh `
             -f json
           echo ""
-          echo "Testing English audio..."
+          echo "Testing English alignment..."
           .\dist\qwen3-aligner\qwen3-aligner.exe align `
             -a test_audio/test_en.wav `
             -t "Today is a wonderful day" `
-            -l English
+            -l en
 
       - name: Get version
         id: version

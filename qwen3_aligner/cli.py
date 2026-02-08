@@ -46,14 +46,21 @@ def format_output(alignments: list, output_format: str) -> str:
 
 def cmd_align(args):
     """Handle align command."""
-    from .config import Config, get_default_model_path
+    from .config import Config, normalize_language
     from .model_manager import get_model_manager
 
+    # Normalize language input
+    try:
+        language = normalize_language(args.language)
+    except ValueError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        sys.exit(1)
+
     config = Config()
-    # Use provided model or default (local first, then HuggingFace)
     if args.model:
         config.model.model_path = args.model
-    # else use default from config (which checks local models/ first)
+    if args.dtype:
+        config.model.dtype = args.dtype
 
     manager = get_model_manager(config)
 
@@ -61,7 +68,7 @@ def cmd_align(args):
     print(f"Audio: {args.audio[:80]}..." if len(args.audio) > 80 else f"Audio: {args.audio}", file=sys.stderr)
     start_time = time.time()
 
-    alignments = manager.align_sync(args.audio, args.text, args.language)
+    alignments = manager.align_sync(args.audio, args.text, language)
 
     processing_time = time.time() - start_time
     print(f"Alignment completed in {processing_time:.2f}s", file=sys.stderr)
@@ -84,6 +91,8 @@ def cmd_serve(args):
     config = Config()
     if args.model:
         config.model.model_path = args.model
+    if args.dtype:
+        config.model.dtype = args.dtype
     config.keep_alive.timeout = args.keep_alive
 
     print(f"Starting server on {args.host}:{args.port}")
@@ -101,9 +110,9 @@ def cmd_serve(args):
 
 def cmd_download_model(args):
     """Handle download-model command."""
-    from .config import APP_DIR
     from pathlib import Path
-    import os
+
+    from .config import APP_DIR
 
     model_id = args.model_id or "Qwen/Qwen3-ForcedAligner-0.6B"
 
@@ -144,7 +153,7 @@ def cmd_download_model(args):
 
         print(f"\nModel downloaded successfully to: {output_dir}")
         print("\nYou can now use the aligner:")
-        print(f"  qwen3-aligner align -a audio.wav -t 'text' -l Chinese")
+        print("  qwen3-aligner align -a audio.wav -t 'text' -l Chinese")
 
     except ImportError:
         print("ERROR: huggingface_hub not installed.")
@@ -157,8 +166,9 @@ def cmd_download_model(args):
 
 def cmd_model_info(args):
     """Handle model-info command."""
-    from .config import get_default_model_path, APP_DIR
     from pathlib import Path
+
+    from .config import APP_DIR, get_default_model_path
 
     default_path = get_default_model_path()
 
@@ -170,7 +180,7 @@ def cmd_model_info(args):
     # Check if local model exists
     model_path = Path(default_path)
     if model_path.exists() and (model_path / "config.json").exists():
-        print(f"Model status: Found locally")
+        print("Model status: Found locally")
 
         # Calculate size
         total_size = sum(f.stat().st_size for f in model_path.rglob("*") if f.is_file())
@@ -185,7 +195,7 @@ def cmd_model_info(args):
                 fsize = f.stat().st_size / (1024 * 1024)
                 print(f"  {f.name}: {fsize:.1f} MB")
     else:
-        print(f"Model status: Not found locally")
+        print("Model status: Not found locally")
         print("\nTo download the model, run:")
         print("  qwen3-aligner download-model")
 
@@ -231,12 +241,20 @@ Examples:
     align_parser.add_argument(
         "--language", "-l",
         default="Chinese",
-        help="Language (default: Chinese)"
+        help="Language: Chinese/zh, English/en, Japanese/ja, Korean/ko, "
+             "Cantonese/yue, German/de, Spanish/es, French/fr, Italian/it, "
+             "Portuguese/pt, Russian/ru (default: Chinese)"
     )
     align_parser.add_argument(
         "--model", "-m",
         default=None,
         help=f"Model path (default: {default_model})"
+    )
+    align_parser.add_argument(
+        "--dtype",
+        choices=["float32", "bfloat16"],
+        default=None,
+        help="Model dtype (default: float32, use bfloat16 for CUDA)"
     )
     align_parser.add_argument(
         "--format", "-f",
@@ -291,6 +309,12 @@ Example:
         "--model", "-m",
         default=None,
         help=f"Model path (default: {default_model})"
+    )
+    serve_parser.add_argument(
+        "--dtype",
+        choices=["float32", "bfloat16"],
+        default=None,
+        help="Model dtype (default: float32, use bfloat16 for CUDA)"
     )
     serve_parser.add_argument(
         "--keep-alive", "-k",
