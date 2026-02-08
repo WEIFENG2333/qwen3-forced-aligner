@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Qwen3 Forced Aligner - Audio-Text Alignment Service"
 readme = "README.md"
 license = {text = "Apache-2.0"}
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [
     {name = "Qwen Team"},
 ]
@@ -17,9 +17,9 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Multimedia :: Sound/Audio :: Speech",
 ]
 keywords = ["speech", "alignment", "asr", "qwen", "audio", "forced-alignment"]
@@ -51,7 +51,7 @@ include = ["qwen3_aligner*"]
 
 [tool.ruff]
 line-length = 120
-target-version = "py39"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I"]
