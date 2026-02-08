@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+
+# PyInstaller
+build/
+dist/
+*.spec
+
+# Model files (too large for git, ~1.8GB)
+qwen3_aligner/models/
+models/
+*.safetensors
+*.bin
+*.ckpt
+*.pt
+*.pth
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime-*
+
+# Test outputs
+test_output/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Egg
+*.egg-info/
+*.egg
+
+# Coverage
+.coverage
+htmlcov/
+
+# Type checking
+.mypy_cache/
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/

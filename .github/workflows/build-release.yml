@@ -1,0 +1,191 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., v0.1.0)'
+        required: false
+        default: ''
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            arch: x64
+          - os: macos-latest
+            platform: darwin
+            arch: x64
+          - os: macos-14
+            platform: darwin
+            arch: arm64
+          - os: windows-latest
+            platform: windows
+            arch: x64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install system dependencies (Linux)
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsndfile1
+
+      - name: Install system dependencies (macOS)
+        if: matrix.platform == 'darwin'
+        run: |
+          brew install libsndfile
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -e ".[dev]"
+
+      - name: Download model for testing
+        run: |
+          python -c "
+          from huggingface_hub import snapshot_download
+          snapshot_download(
+              repo_id='Qwen/Qwen3-ForcedAligner-0.6B',
+              local_dir='qwen3_aligner/models',
+              local_dir_use_symlinks=False,
+          )
+          "
+
+      - name: Build with PyInstaller
+        run: |
+          python build.py --archive
+
+      - name: Test executable (Unix)
+        if: matrix.platform != 'windows'
+        run: |
+          ./dist/qwen3-aligner/qwen3-aligner --help
+          ./dist/qwen3-aligner/qwen3-aligner model-info
+
+      - name: Test executable (Windows)
+        if: matrix.platform == 'windows'
+        run: |
+          .\dist\qwen3-aligner\qwen3-aligner.exe --help
+          .\dist\qwen3-aligner\qwen3-aligner.exe model-info
+
+      - name: Get version
+        id: version
+        shell: bash
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          else
+            echo "version=dev-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Rename archive
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          ARCHIVE_NAME="qwen3-aligner-${VERSION}-${{ matrix.platform }}-${{ matrix.arch }}"
+
+          # Find the zip file
+          if [ "${{ matrix.platform }}" == "windows" ]; then
+            mv dist/qwen3-aligner-*.zip "dist/${ARCHIVE_NAME}.zip"
+          else
+            mv dist/qwen3-aligner-*.zip "dist/${ARCHIVE_NAME}.zip"
+          fi
+
+          echo "ARCHIVE_NAME=${ARCHIVE_NAME}" >> $GITHUB_ENV
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: qwen3-aligner-${{ matrix.platform }}-${{ matrix.arch }}
+          path: dist/*.zip
+          retention-days: 7
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/') || github.event.inputs.version != ''
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: List artifacts
+        run: |
+          find artifacts -type f -name "*.zip" | sort
+
+      - name: Get version
+        id: version
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Qwen3 Forced Aligner ${{ steps.version.outputs.version }}
+          tag_name: ${{ steps.version.outputs.version }}
+          draft: false
+          prerelease: ${{ contains(steps.version.outputs.version, '-') }}
+          generate_release_notes: true
+          files: |
+            artifacts/**/*.zip
+          body: |
+            ## Qwen3 Forced Aligner ${{ steps.version.outputs.version }}
+
+            Audio-text forced alignment tool using Qwen3-ForcedAligner-0.6B model.
+
+            ### Download
+
+            Choose the appropriate package for your platform:
+            - **Linux x64**: `qwen3-aligner-${{ steps.version.outputs.version }}-linux-x64.zip`
+            - **macOS x64**: `qwen3-aligner-${{ steps.version.outputs.version }}-darwin-x64.zip`
+            - **macOS ARM64**: `qwen3-aligner-${{ steps.version.outputs.version }}-darwin-arm64.zip`
+            - **Windows x64**: `qwen3-aligner-${{ steps.version.outputs.version }}-windows-x64.zip`
+
+            ### Quick Start
+
+            1. Download and extract the archive for your platform
+            2. Download the model:
+               ```bash
+               ./qwen3-aligner download-model
+               ```
+            3. Run alignment:
+               ```bash
+               ./qwen3-aligner align -a audio.wav -t "your text" -l Chinese
+               ```
+
+            ### Model
+
+            The model (~1.8GB) is not included in the binary. Download it using:
+            ```bash
+            qwen3-aligner download-model
+            ```
+
+            Or manually from: https://huggingface.co/Qwen/Qwen3-ForcedAligner-0.6B
