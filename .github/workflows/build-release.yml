@@ -45,7 +45,7 @@ jobs:
       - name: Free disk space (Linux)
         if: matrix.platform == 'linux'
         run: |
-          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
           sudo apt-get clean
 
       - name: Install system dependencies (Linux)

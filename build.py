@@ -123,7 +123,6 @@ a = Analysis(
         'pytest',
         'sphinx',
         'sklearn',
-        'numba',
         'PIL',
         'cv2',
         'pandas',
