@@ -11,13 +11,9 @@
 
 ### 方式一：下载预编译包
 
-从 [Releases](https://github.com/WEIFENG2333/qwen3-forced-aligner/releases) 下载对应平台的压缩包，解压后即可使用。
+从 [Releases](https://github.com/WEIFENG2333/qwen3-forced-aligner/releases) 下载对应平台的压缩包，解压后即可使用。模型已内置，无需额外下载。
 
 ```bash
-# 下载模型（约 1.8GB，首次使用前需要下载）
-./qwen3-aligner download-model
-
-# 运行对齐
 ./qwen3-aligner align -a audio.wav -t "你好世界" -l zh
 ```
 
@@ -27,11 +23,13 @@
 git clone https://github.com/WEIFENG2333/qwen3-forced-aligner.git
 cd qwen3-forced-aligner
 
-# 推荐使用 uv
+# 推荐使用 uv（默认安装 CPU 版 PyTorch）
 uv sync
 qwen3-aligner download-model
 qwen3-aligner align -a audio.wav -t "Hello world" -l en
 ```
+
+> 项目已配置 `tool.uv.sources` 从 PyTorch CPU 索引安装 torch，无需手动处理 CUDA 依赖。如需 GPU 推理，可自行替换为 CUDA 版本：`uv pip install torch --index-url https://download.pytorch.org/whl/cu124 --reinstall`
 
 ## 使用
 
@@ -143,7 +141,7 @@ uv sync --extra dev
 # 构建
 python build.py
 
-# 构建并打包为 zip
+# 构建并打包为 zip（模型需自行复制到 dist 目录）
 python build.py --archive
 ```
 
