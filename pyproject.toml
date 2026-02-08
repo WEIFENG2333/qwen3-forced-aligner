@@ -52,7 +52,7 @@ qwen3-aligner = "qwen3_aligner.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/QwenLM/Qwen3-ASR"
-Repository = "https://github.com/YOUR_USERNAME/qwen3-forced-aligner"
+Repository = "https://github.com/WEIFENG2333/qwen3-forced-aligner"
 
 [tool.setuptools.packages.find]
 include = ["qwen3_aligner*", "qwen_asr*"]

@@ -1,7 +1,7 @@
 # Qwen3 Forced Aligner
 
-[![Build and Release](https://github.com/YOUR_USERNAME/qwen3-forced-aligner/actions/workflows/build-release.yml/badge.svg)](https://github.com/YOUR_USERNAME/qwen3-forced-aligner/actions/workflows/build-release.yml)
-[![Test](https://github.com/YOUR_USERNAME/qwen3-forced-aligner/actions/workflows/test.yml/badge.svg)](https://github.com/YOUR_USERNAME/qwen3-forced-aligner/actions/workflows/test.yml)
+[![Build and Release](https://github.com/WEIFENG2333/qwen3-forced-aligner/actions/workflows/build-release.yml/badge.svg)](https://github.com/WEIFENG2333/qwen3-forced-aligner/actions/workflows/build-release.yml)
+[![Test](https://github.com/WEIFENG2333/qwen3-forced-aligner/actions/workflows/test.yml/badge.svg)](https://github.com/WEIFENG2333/qwen3-forced-aligner/actions/workflows/test.yml)
 
 Audio-text forced alignment service based on [Qwen3-ForcedAligner-0.6B](https://huggingface.co/Qwen/Qwen3-ForcedAligner-0.6B) model.
 
@@ -17,7 +17,7 @@ Audio-text forced alignment service based on [Qwen3-ForcedAligner-0.6B](https://
 
 ### Option 1: Download Pre-built Binary
 
-1. Download the latest release from [Releases](https://github.com/YOUR_USERNAME/qwen3-forced-aligner/releases)
+1. Download the latest release from [Releases](https://github.com/WEIFENG2333/qwen3-forced-aligner/releases)
 2. Extract the archive
 3. Download the model:
    ```bash
@@ -32,7 +32,7 @@ Audio-text forced alignment service based on [Qwen3-ForcedAligner-0.6B](https://
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/qwen3-forced-aligner.git
+git clone https://github.com/WEIFENG2333/qwen3-forced-aligner.git
 cd qwen3-forced-aligner
 
 # Create virtual environment
