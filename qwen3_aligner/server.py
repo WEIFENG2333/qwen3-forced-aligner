@@ -17,7 +17,7 @@ from typing import Optional
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from .config import Config, get_config, normalize_language, set_config
+from .config import Config, check_audio_duration, get_config, normalize_language, set_config
 from .model_manager import get_model_manager
 from .schemas import (
     AlignRequest,
@@ -174,6 +174,14 @@ def register_routes(app: FastAPI) -> None:
             language = normalize_language(request.language)
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
+
+        # Check audio duration for local files
+        audio = request.audio
+        if not audio.startswith(("http://", "https://", "data:")):
+            try:
+                check_audio_duration(audio)
+            except ValueError as e:
+                raise HTTPException(status_code=400, detail=str(e))
 
         try:
             alignments = await manager.align(

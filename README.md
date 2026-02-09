@@ -5,7 +5,7 @@
 
 基于 [Qwen3-ForcedAligner-0.6B](https://huggingface.co/Qwen/Qwen3-ForcedAligner-0.6B) 的音频-文本强制对齐工具。给定一段音频和对应文本，输出每个词/字的时间戳。
 
-支持 CLI 命令行和 REST API 两种使用方式，支持 11 种语言。提供 Linux、macOS、Windows 预编译包，开箱即用。
+支持 CLI 命令行和 REST API 两种使用方式，支持 11 种语言，单次最长处理 3 分钟音频。提供 Linux、macOS、Windows 预编译包，开箱即用。
 
 ## 安装
 
@@ -120,6 +120,11 @@ qwen3-aligner model-info
 | French 法语 | `fr` | | |
 
 `-l` 参数支持全称（如 `Chinese`）和缩写（如 `zh`），不区分大小写。
+
+## 限制
+
+- 单次音频最长 **3 分钟**（180 秒），最短 0.5 秒
+- 超出范围会返回错误提示，不会执行对齐
 
 ## 环境变量
 

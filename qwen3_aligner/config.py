@@ -14,6 +14,10 @@ SUPPORTED_LANGUAGES = [
     "French", "Italian", "Portuguese", "Russian", "Korean", "Japanese",
 ]
 
+# Audio duration limits (seconds)
+MAX_AUDIO_DURATION = 180  # 3 minutes, same as qwen_asr MAX_FORCE_ALIGN_INPUT_SECONDS
+MIN_AUDIO_DURATION = 0.5
+
 LANGUAGE_ALIASES = {
     "zh": "Chinese",
     "yue": "Cantonese",
@@ -47,6 +51,25 @@ def normalize_language(language: str) -> str:
         f"Supported: {', '.join(SUPPORTED_LANGUAGES)}. "
         f"Aliases: {', '.join(LANGUAGE_ALIASES.keys())}"
     )
+
+
+def check_audio_duration(audio_path: str) -> float:
+    """Check audio duration and raise ValueError if out of range.
+
+    Returns the duration in seconds.
+    """
+    import librosa
+
+    duration = librosa.get_duration(filename=audio_path)
+    if duration < MIN_AUDIO_DURATION:
+        raise ValueError(
+            f"Audio too short: {duration:.1f}s (minimum {MIN_AUDIO_DURATION}s)"
+        )
+    if duration > MAX_AUDIO_DURATION:
+        raise ValueError(
+            f"Audio too long: {duration:.1f}s (maximum {MAX_AUDIO_DURATION}s / {MAX_AUDIO_DURATION // 60} minutes)"
+        )
+    return duration
 
 
 def get_app_dir() -> Path:

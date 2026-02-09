@@ -46,7 +46,7 @@ def format_output(alignments: list, output_format: str) -> str:
 
 def cmd_align(args):
     """Handle align command."""
-    from .config import Config, normalize_language
+    from .config import Config, check_audio_duration, normalize_language
     from .model_manager import get_model_manager
 
     # Normalize language input
@@ -55,6 +55,16 @@ def cmd_align(args):
     except ValueError as e:
         print(f"ERROR: {e}", file=sys.stderr)
         sys.exit(1)
+
+    # Check audio duration for local files
+    audio = args.audio
+    if not audio.startswith(("http://", "https://", "data:")):
+        try:
+            duration = check_audio_duration(audio)
+            print(f"Audio duration: {duration:.1f}s", file=sys.stderr)
+        except ValueError as e:
+            print(f"ERROR: {e}", file=sys.stderr)
+            sys.exit(1)
 
     config = Config()
     if args.model:
@@ -65,7 +75,7 @@ def cmd_align(args):
     manager = get_model_manager(config)
 
     print(f"Model: {config.model.model_path}", file=sys.stderr)
-    print(f"Audio: {args.audio[:80]}..." if len(args.audio) > 80 else f"Audio: {args.audio}", file=sys.stderr)
+    print(f"Audio: {audio[:80]}..." if len(audio) > 80 else f"Audio: {audio}", file=sys.stderr)
     start_time = time.time()
 
     alignments = manager.align_sync(args.audio, args.text, language)
