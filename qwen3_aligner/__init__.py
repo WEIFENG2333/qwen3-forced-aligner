@@ -13,7 +13,16 @@ Features:
 
 __version__ = "0.1.0"
 
-from .config import MAX_AUDIO_DURATION, MIN_AUDIO_DURATION, SUPPORTED_LANGUAGES, Config, check_audio_duration, get_config, normalize_language, set_config
+from .config import (
+    MAX_AUDIO_DURATION,
+    MIN_AUDIO_DURATION,
+    SUPPORTED_LANGUAGES,
+    Config,
+    check_audio_duration,
+    get_config,
+    normalize_language,
+    set_config,
+)
 from .model_manager import ModelManager, get_model_manager
 from .schemas import AlignmentItem, AlignRequest, AlignResponse
 
